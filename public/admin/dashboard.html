@@ -378,7 +378,7 @@
 
             <!-- Logo -->
             <div class="logo">
-                <h1>LIMEBYTE</h1>
+                <h1 id="site-title-header">LIMEBYTE</h1>
             </div>
 
             <!-- Header -->
@@ -392,6 +392,7 @@
                 <button class="tab-button active" onclick="showTab('posts')">Create Post</button>
                 <button class="tab-button" onclick="showTab('subscribers')">Newsletter Subscribers</button>
                 <button class="tab-button" onclick="showTab('profile')">Profile</button>
+                <button class="tab-button" onclick="showTab('settings')">Settings</button>
             </div>
 
             <!-- Posts Tab -->
@@ -491,6 +492,27 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="post-form">
+                    <h2>Site Settings</h2>
+                    
+                    <form id="settings-form">
+                        <div class="form-group">
+                            <label for="site-title">Site Title</label>
+                            <input type="text" id="site-title" name="site_title" placeholder="Enter site title" required>
+                            <div class="form-help">This title will be displayed throughout the site</div>
+                        </div>
+                        
+                        <button type="submit" class="submit-button" id="settings-submit-button">
+                            Save Settings
+                        </button>
+                        
+                        <div id="settings-message-display"></div>
+                    </form>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -540,6 +562,11 @@
             // Load profile if switching to profile tab
             if (tabName === 'profile') {
                 loadProfile();
+            }
+            
+            // Load settings if switching to settings tab
+            if (tabName === 'settings') {
+                loadSettings();
             }
         }
 
@@ -677,6 +704,23 @@
             }
         }
 
+        // Load site settings
+        async function loadSiteSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                
+                if (response.ok) {
+                    const settings = await response.json();
+                    if (settings.site_title) {
+                        document.getElementById('site-title-header').textContent = settings.site_title;
+                        document.title = `Admin Dashboard - ${settings.site_title}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading site settings:', error);
+            }
+        }
+
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
@@ -684,6 +728,7 @@
                 window.location.href = '/admin';
                 return;
             }
+            loadSiteSettings();
         });
 
         // Handle post creation
@@ -900,6 +945,80 @@
             } finally {
                 button.disabled = false;
                 button.textContent = 'Change Password';
+            }
+        });
+
+        // Load settings
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load settings');
+                }
+                
+                const settings = await response.json();
+                
+                // Populate site title field
+                document.getElementById('site-title').value = settings.site_title || '';
+                
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                document.getElementById('settings-message-display').innerHTML = 
+                    '<div class="error-message">Error loading settings.</div>';
+            }
+        }
+
+        // Handle settings form submission
+        document.getElementById('settings-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
+            
+            const button = document.getElementById('settings-submit-button');
+            const messageDisplay = document.getElementById('settings-message-display');
+            const siteTitle = document.getElementById('site-title').value;
+            
+            button.disabled = true;
+            button.textContent = 'Saving...';
+            messageDisplay.innerHTML = '';
+            
+            if (!siteTitle.trim()) {
+                messageDisplay.innerHTML = '<div class="error-message">Site title is required.</div>';
+                button.disabled = false;
+                button.textContent = 'Save Settings';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ site_title: siteTitle })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    messageDisplay.innerHTML = '<div class="success-message">Settings updated successfully!</div>';
+                    // Update the site title in the header and page title
+                    document.querySelector('.logo h1').textContent = siteTitle;
+                    document.title = `Admin Dashboard - ${siteTitle}`;
+                } else {
+                    messageDisplay.innerHTML = `<div class="error-message">${result.error}</div>`;
+                }
+            } catch (error) {
+                messageDisplay.innerHTML = '<div class="error-message">Failed to update settings. Please try again.</div>';
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Save Settings';
             }
         });
 

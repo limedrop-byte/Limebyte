@@ -38,7 +38,6 @@ async function runMigrations() {
 
     console.log('\n🎉 All migrations completed successfully!');
     console.log('📋 Database is up to date');
-    console.log('🔐 Default admin credentials: username=admin, password=admin');
     
   } catch (error) {
     console.error('❌ Migration failed:', error);
