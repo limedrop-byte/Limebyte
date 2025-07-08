@@ -83,12 +83,48 @@
             line-height: 1.7;
         }
         
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 2rem;
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 300;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        
+        .tab-button:hover {
+            color: #374151;
+        }
+        
+        .tab-button.active {
+            color: #000;
+            border-bottom-color: #000;
+        }
+        
+        .tab-content {
+            display: none;
+            margin-bottom: 4rem;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .post-form {
             background: #fff;
             border: 1px solid #f3f4f6;
             border-radius: 0.5rem;
             padding: 2rem;
-            margin-bottom: 4rem;
         }
         
         .post-form h2 {
@@ -192,6 +228,106 @@
             margin-top: 1rem;
             font-weight: 300;
         }
+        
+        /* Subscribers Table */
+        .subscribers-section {
+            background: #fff;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+        }
+        
+        .subscribers-section h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #000;
+            margin-bottom: 2rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .subscribers-stats {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 300;
+        }
+        
+        .subscribers-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .subscribers-table th,
+        .subscribers-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .subscribers-table th {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .subscribers-table td {
+            font-weight: 300;
+            color: #000;
+        }
+        
+        .subscribers-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .email-cell {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .date-cell {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .loading-table {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+            font-weight: 300;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+            font-weight: 300;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
     </style>
 </head>
 <body>
@@ -216,28 +352,58 @@
                 <p>Create and manage your blog posts</p>
             </header>
 
-            <!-- Post Form -->
-            <form class="post-form" id="post-form">
-                <h2>Create New Post</h2>
-                
-                <div class="form-group">
-                    <label for="subject">Subject</label>
-                    <input type="text" id="subject" name="subject" required placeholder="Enter post subject">
-                </div>
-                
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <div class="editor-container">
-                        <div id="editor"></div>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-button active" onclick="showTab('posts')">Create Post</button>
+                <button class="tab-button" onclick="showTab('subscribers')">Newsletter Subscribers</button>
+            </div>
+
+            <!-- Posts Tab -->
+            <div id="posts-tab" class="tab-content active">
+                <form class="post-form" id="post-form">
+                    <h2>Create New Post</h2>
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" name="subject" required placeholder="Enter post subject">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <div class="editor-container">
+                            <div id="editor"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-button" id="submit-button">
+                        Create Post
+                    </button>
+                    
+                    <div id="message-display"></div>
+                </form>
+            </div>
+
+            <!-- Subscribers Tab -->
+            <div id="subscribers-tab" class="tab-content">
+                <div class="subscribers-section">
+                    <h2>Newsletter Subscribers</h2>
+                    
+                    <div class="subscribers-stats">
+                        <div class="stat">
+                            <div class="stat-number" id="total-subscribers">-</div>
+                            <div class="stat-label">Total Subscribers</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="recent-subscribers">-</div>
+                            <div class="stat-label">This Week</div>
+                        </div>
+                    </div>
+                    
+                    <div id="subscribers-table-container">
+                        <div class="loading-table">Loading subscribers...</div>
                     </div>
                 </div>
-                
-                <button type="submit" class="submit-button" id="submit-button">
-                    Create Post
-                </button>
-                
-                <div id="message-display"></div>
-            </form>
+            </div>
         </div>
     </main>
 
@@ -260,6 +426,115 @@
                 ]
             }
         });
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load subscribers if switching to subscribers tab
+            if (tabName === 'subscribers') {
+                loadSubscribers();
+            }
+        }
+
+        // Load subscribers
+        async function loadSubscribers() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/newsletter/subscribers', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load subscribers');
+                }
+                
+                const subscribers = await response.json();
+                displaySubscribers(subscribers);
+                
+            } catch (error) {
+                console.error('Error loading subscribers:', error);
+                document.getElementById('subscribers-table-container').innerHTML = 
+                    '<div class="loading-table">Error loading subscribers.</div>';
+            }
+        }
+
+        // Display subscribers
+        function displaySubscribers(subscribers) {
+            const container = document.getElementById('subscribers-table-container');
+            const totalElement = document.getElementById('total-subscribers');
+            const recentElement = document.getElementById('recent-subscribers');
+            
+            // Update stats
+            totalElement.textContent = subscribers.length;
+            
+            // Calculate recent subscribers (last 7 days)
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const recentCount = subscribers.filter(sub => 
+                new Date(sub.created_at) > oneWeekAgo
+            ).length;
+            recentElement.textContent = recentCount;
+            
+            if (subscribers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No subscribers yet</h3>
+                        <p>When people subscribe to your newsletter, they'll appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Generate table
+            const tableHTML = `
+                <table class="subscribers-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Subscribed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${subscribers.map(subscriber => `
+                            <tr>
+                                <td class="email-cell">${subscriber.email}</td>
+                                <td class="date-cell">${new Date(subscriber.created_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
 
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', () => {

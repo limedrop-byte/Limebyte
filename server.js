@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 // Import routes
 const authRoutes = require('./routes/auth');
 const postsRoutes = require('./routes/posts');
+const newsletterRoutes = require('./routes/newsletter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use(express.static('public'));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Route handlers for frontend pages
 app.get('/', (req, res) => {

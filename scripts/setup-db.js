@@ -24,6 +24,15 @@ async function setupDatabase() {
       )
     `);
 
+    // Create subscribers table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create default admin user (password: admin)
     const bcrypt = require('bcryptjs');
     const hashedPassword = await bcrypt.hash('admin', 10);
@@ -36,6 +45,7 @@ async function setupDatabase() {
 
     console.log('Database setup completed successfully!');
     console.log('Default admin user created: username=admin, password=admin');
+    console.log('Tables created: users, posts, subscribers');
     
   } catch (error) {
     console.error('Error setting up database:', error);
