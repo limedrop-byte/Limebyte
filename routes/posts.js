@@ -32,12 +32,23 @@ async function ensureUniqueRandomSlug() {
 // Get all posts (public)
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query(`
+    const { search } = req.query;
+    
+    let query = `
       SELECT p.*, COALESCE(u.display_name, u.username) as author 
       FROM posts p 
       JOIN users u ON p.author_id = u.id 
-      ORDER BY p.created_at DESC
-    `);
+    `;
+    let params = [];
+    
+    if (search) {
+      query += ` WHERE p.subject ILIKE $1 `;
+      params.push(`%${search}%`);
+    }
+    
+    query += ` ORDER BY p.created_at DESC`;
+    
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching posts:', error);

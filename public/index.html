@@ -591,6 +591,76 @@
         .link-error {
             color: #ef4444;
         }
+
+        /* Search Section */
+        .search-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .search-container {
+            position: relative;
+            max-width: 400px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-family: inherit;
+            background-color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .search-container input:focus {
+            outline: none;
+            border-color: #374151;
+            box-shadow: 0 0 0 2px rgba(55, 65, 81, 0.1);
+        }
+        
+        .search-container input::placeholder {
+            color: #9ca3af;
+            font-weight: 300;
+        }
+        
+        #search-clear {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+        
+        #search-clear:hover {
+            color: #374151;
+            background-color: #f3f4f6;
+        }
+        
+        .search-results-info {
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 300;
+        }
+
+        /* Search highlighting */
+        mark {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -622,6 +692,15 @@
                 <div class="links-list" id="links-list">
                     <!-- Links will be populated here -->
                 </div>
+            </div>
+
+            <!-- Search Section -->
+            <div class="search-section">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search articles..." maxlength="100">
+                    <button type="button" id="search-clear" style="display: none;">×</button>
+                </div>
+                <div class="search-results-info" id="search-results-info" style="display: none;"></div>
             </div>
 
             <!-- Header
@@ -852,15 +931,27 @@
         }
 
         // Fetch and display articles
-        async function loadArticles() {
+        async function loadArticles(searchQuery = '') {
             try {
-                const response = await fetch('/api/posts');
+                const url = searchQuery ? `/api/posts?search=${encodeURIComponent(searchQuery)}` : '/api/posts';
+                const response = await fetch(url);
                 const posts = await response.json();
                 
                 const articlesContainer = document.getElementById('articles-list');
+                const searchResultsInfo = document.getElementById('search-results-info');
+                
+                // Update search results info
+                if (searchQuery) {
+                    const resultText = posts.length === 1 ? 'result' : 'results';
+                    searchResultsInfo.textContent = `${posts.length} ${resultText} found for "${searchQuery}"`;
+                    searchResultsInfo.style.display = 'block';
+                } else {
+                    searchResultsInfo.style.display = 'none';
+                }
                 
                 if (posts.length === 0) {
-                    articlesContainer.innerHTML = '<div class="loading">No articles yet.</div>';
+                    const message = searchQuery ? `No articles found for "${searchQuery}".` : 'No articles yet.';
+                    articlesContainer.innerHTML = `<div class="loading">${message}</div>`;
                     return;
                 }
                 
@@ -874,11 +965,18 @@
                         .trim();
                     const preview = textContent.substring(0, 200) + (textContent.length > 200 ? '...' : '');
                     
+                    // Highlight search terms in title if searching
+                    let highlightedTitle = post.subject;
+                    if (searchQuery) {
+                        const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        highlightedTitle = post.subject.replace(regex, '<mark>$1</mark>');
+                    }
+                    
                     return `
                         <article class="article">
                             <a href="/post/${post.slug || post.id}">
                                 <div class="article-content">
-                                    <h2>${post.subject}</h2>
+                                    <h2>${highlightedTitle}</h2>
                                     <p>${preview}</p>
                                     <div class="article-meta">
                                         <span>${post.author}</span>
@@ -925,7 +1023,51 @@
             loadArticles();
             loadLinks();
             loadSiteSettings();
+            
+            // Initialize search functionality
+            initializeSearch();
         });
+
+        // Initialize search functionality
+        function initializeSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchClear = document.getElementById('search-clear');
+            let searchTimeout;
+
+            // Handle search input with debounce
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                // Show/hide clear button
+                if (query) {
+                    searchClear.style.display = 'block';
+                } else {
+                    searchClear.style.display = 'none';
+                }
+
+                // Debounce search to avoid too many API calls
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadArticles(query);
+                }, 300);
+            });
+
+            // Handle clear button
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                loadArticles('');
+            });
+
+            // Handle Enter key
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    loadArticles(searchInput.value.trim());
+                }
+            });
+        }
 
         // Links management
         let currentEditingLink = null;
