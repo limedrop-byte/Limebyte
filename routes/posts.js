@@ -32,7 +32,7 @@ async function ensureUniqueRandomSlug() {
 // Get all posts (public)
 router.get('/', async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, sortBy = 'date', sortOrder = 'desc' } = req.query;
     
     let query = `
       SELECT p.*, COALESCE(u.display_name, u.username) as author 
@@ -46,7 +46,15 @@ router.get('/', async (req, res) => {
       params.push(`%${search}%`);
     }
     
-    query += ` ORDER BY p.created_at DESC`;
+    // Add sorting
+    let orderBy = 'p.created_at DESC'; // default
+    if (sortBy === 'date') {
+      orderBy = sortOrder === 'asc' ? 'p.created_at ASC' : 'p.created_at DESC';
+    } else if (sortBy === 'views') {
+      orderBy = sortOrder === 'asc' ? 'p.view_count ASC, p.created_at DESC' : 'p.view_count DESC, p.created_at DESC';
+    }
+    
+    query += ` ORDER BY ${orderBy}`;
     
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -84,8 +92,16 @@ router.get('/:slug', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Post not found' });
     }
+
+    const post = result.rows[0];
     
-    res.json(result.rows[0]);
+    // Increment view count
+    await pool.query('UPDATE posts SET view_count = view_count + 1 WHERE id = $1', [post.id]);
+    
+    // Update the view count in the response
+    post.view_count = (post.view_count || 0) + 1;
+    
+    res.json(post);
   } catch (error) {
     console.error('Error fetching post:', error);
     res.status(500).json({ error: 'Internal server error' });

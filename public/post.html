@@ -928,6 +928,8 @@
                                 month: 'long', 
                                 day: 'numeric' 
                             })}</span>
+                            <span>•</span>
+                            <span>${currentPost.view_count || 0} view${(currentPost.view_count || 0) === 1 ? '' : 's'}</span>
                         </div>
                         <div class="share-dropdown">
                             <button class="share-button" onclick="sharePost()" title="Share post">
