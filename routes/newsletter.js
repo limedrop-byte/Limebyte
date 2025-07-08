@@ -55,4 +55,37 @@ router.get('/subscribers', authenticateToken, async (req, res) => {
   }
 });
 
+// Export subscribers as CSV (admin only)
+router.get('/subscribers/export', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT email, created_at 
+      FROM subscribers 
+      ORDER BY created_at DESC
+    `);
+    
+    // Create CSV content
+    const csvHeader = 'Email,Subscribed Date\n';
+    const csvContent = result.rows.map(subscriber => {
+      const formattedDate = new Date(subscriber.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      return `"${subscriber.email}","${formattedDate}"`;
+    }).join('\n');
+    
+    const csv = csvHeader + csvContent;
+    
+    // Set headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="newsletter-subscribers.csv"');
+    
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting subscribers:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router; 

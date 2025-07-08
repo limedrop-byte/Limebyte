@@ -1,28 +1,16 @@
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
-// Generate RSA key pair for JWT signing (in production, store these securely)
-const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-  modulusLength: 2048,
-  publicKeyEncoding: {
-    type: 'spki',
-    format: 'pem'
-  },
-  privateKeyEncoding: {
-    type: 'pkcs8',
-    format: 'pem'
-  }
-});
+// Static secret key for JWT signing (in production, use environment variable)
+const JWT_SECRET = process.env.JWT_SECRET || 'limebyte-blog-secret-key-2024';
 
 const JWT_CONFIG = {
-  privateKey,
-  publicKey,
-  algorithm: 'RS256',
+  secret: JWT_SECRET,
+  algorithm: 'HS256',
   expiresIn: '24h'
 };
 
 function generateToken(payload) {
-  return jwt.sign(payload, JWT_CONFIG.privateKey, {
+  return jwt.sign(payload, JWT_CONFIG.secret, {
     algorithm: JWT_CONFIG.algorithm,
     expiresIn: JWT_CONFIG.expiresIn
   });
@@ -30,7 +18,7 @@ function generateToken(payload) {
 
 function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_CONFIG.publicKey, {
+    return jwt.verify(token, JWT_CONFIG.secret, {
       algorithms: [JWT_CONFIG.algorithm]
     });
   } catch (error) {

@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT p.*, u.username as author 
+      SELECT p.*, COALESCE(u.display_name, u.username) as author 
       FROM posts p 
       JOIN users u ON p.author_id = u.id 
       ORDER BY p.created_at DESC
@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`
-      SELECT p.*, u.username as author 
+      SELECT p.*, COALESCE(u.display_name, u.username) as author 
       FROM posts p 
       JOIN users u ON p.author_id = u.id 
       WHERE p.id = $1

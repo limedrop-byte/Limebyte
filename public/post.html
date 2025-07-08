@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Loading... - LIMEBYTE</title>
+    <title id="page-title">Loading...</title>
     <meta name="description" content="" id="page-description">
     
     <!-- Quill.js CDN -->
@@ -23,13 +23,14 @@
             min-height: 100vh;
         }
         
-        .container {
+                .container {
             max-width: 42rem;
             margin: 0 auto;
             padding: 0 1.5rem;
-            padding-top: 4rem;
+            padding-top: 3rem;
+            position: relative;
         }
-        
+
         .back-button {
             margin-bottom: 2rem;
         }
@@ -45,17 +46,41 @@
         .back-button a:hover {
             color: #1f2937;
         }
-        
-        .logo {
-            margin-bottom: 3rem;
+
+        /* Admin Panel */
+        .admin-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            display: none;
         }
         
-        .logo h1 {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: #000;
-            letter-spacing: -0.025em;
+        .admin-panel a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #ec4899;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        
+        .admin-panel a:hover {
+            background-color: #db2777;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .admin-panel a::before {
+            content: '👤';
+            font-size: 1rem;
+            filter: brightness(0) invert(1);
+        }
+        
+
         
         .article-header {
             margin-bottom: 3rem;
@@ -493,14 +518,14 @@
 <body>
     <main>
         <div class="container">
+            <!-- Admin Panel -->
+            <div class="admin-panel" id="admin-panel">
+                <a href="/admin/dashboard"></a>
+            </div>
+
             <!-- Back Button -->
             <div class="back-button">
                 <a href="/">← Back to Articles</a>
-            </div>
-
-            <!-- Logo -->
-            <div class="logo">
-                <h1>LIMEBYTE</h1>
             </div>
 
             <!-- Article Content -->
@@ -652,8 +677,16 @@
                 currentPost = await response.json();
                 
                 // Update page title and meta
-                document.getElementById('page-title').textContent = `${currentPost.subject} - LIMEBYTE`;
+                document.getElementById('page-title').textContent = currentPost.subject;
                 document.getElementById('page-description').setAttribute('content', currentPost.subject);
+                
+                // Update admin panel visibility
+                const adminPanel = document.getElementById('admin-panel');
+                if (isAdmin()) {
+                    adminPanel.style.display = 'block';
+                } else {
+                    adminPanel.style.display = 'none';
+                }
                 
                 // Display post content
                 const adminActionsHtml = isAdmin() ? `
