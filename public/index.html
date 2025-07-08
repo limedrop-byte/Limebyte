@@ -239,6 +239,7 @@
         
         .footer {
             padding-top: 4rem;
+            padding-bottom: 2rem;
             margin-top: 4rem;
             border-top: 1px solid #f3f4f6;
             text-align: center;
@@ -684,7 +685,7 @@
                         </div>
                     </div>
                 </div>
-                <p>No expectations, just building weird stuff for fun. Made with AI. Repo’s public. Check out the shorts, the games, and join the newsletter n’ shit.</p>
+                <p class="site-description">No expectations, just building weird stuff for fun. Made with AI. Repo’s public. Check out the shorts, the games, and join the newsletter n’ shit.</p>
             </div>
 
             <!-- Links Section -->
@@ -1007,9 +1008,27 @@
                 
                 if (response.ok) {
                     const settings = await response.json();
+                    
+                    // Update site title
                     if (settings.site_title) {
                         document.getElementById('site-title-header').textContent = settings.site_title;
                         document.title = `Articles - ${settings.site_title}`;
+                    }
+                    
+                    // Update site description
+                    if (settings.site_description) {
+                        const descElement = document.querySelector('.site-description');
+                        if (descElement) {
+                            descElement.textContent = settings.site_description;
+                        }
+                    }
+                    
+                    // Update footer text
+                    if (settings.footer_text) {
+                        const footerElement = document.querySelector('.footer p');
+                        if (footerElement) {
+                            footerElement.textContent = settings.footer_text;
+                        }
                     }
                 }
             } catch (error) {

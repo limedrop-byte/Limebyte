@@ -7,11 +7,15 @@ const router = express.Router();
 // Get site settings
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT site_title FROM settings LIMIT 1');
+    const result = await pool.query('SELECT site_title, footer_text, site_description FROM settings LIMIT 1');
     
     if (result.rows.length === 0) {
-      // If no settings exist, return default
-      return res.json({ site_title: 'LIMEBYTE' });
+      // If no settings exist, return defaults
+      return res.json({ 
+        site_title: 'LIMEBYTE',
+        footer_text: 'Building the future, one commit at a time.',
+        site_description: 'No expectations, just building weird stuff for fun. Made with AI. Repo\'s public. Check out the shorts, the games, and join the newsletter n\' shit.'
+      });
     }
     
     res.json(result.rows[0]);
@@ -24,11 +28,15 @@ router.get('/', async (req, res) => {
 // Update site settings (admin only)
 router.put('/', authenticateToken, async (req, res) => {
   try {
-    const { site_title } = req.body;
+    const { site_title, footer_text, site_description } = req.body;
 
     if (!site_title || !site_title.trim()) {
       return res.status(400).json({ error: 'Site title is required' });
     }
+
+    // Set defaults for optional fields
+    const footerText = footer_text || 'Building the future, one commit at a time.';
+    const siteDescription = site_description || 'No expectations, just building weird stuff for fun. Made with AI. Repo\'s public. Check out the shorts, the games, and join the newsletter n\' shit.';
 
     // Check if settings row exists
     const existingResult = await pool.query('SELECT id FROM settings LIMIT 1');
@@ -36,10 +44,10 @@ router.put('/', authenticateToken, async (req, res) => {
     if (existingResult.rows.length === 0) {
       // Insert new settings row
       const result = await pool.query(`
-        INSERT INTO settings (site_title) 
-        VALUES ($1) 
-        RETURNING site_title
-      `, [site_title.trim()]);
+        INSERT INTO settings (site_title, footer_text, site_description) 
+        VALUES ($1, $2, $3) 
+        RETURNING site_title, footer_text, site_description
+      `, [site_title.trim(), footerText.trim(), siteDescription.trim()]);
       
       res.json({
         message: 'Settings updated successfully',
@@ -49,9 +57,9 @@ router.put('/', authenticateToken, async (req, res) => {
       // Update existing settings
       const result = await pool.query(`
         UPDATE settings 
-        SET site_title = $1 
-        RETURNING site_title
-      `, [site_title.trim()]);
+        SET site_title = $1, footer_text = $2, site_description = $3
+        RETURNING site_title, footer_text, site_description
+      `, [site_title.trim(), footerText.trim(), siteDescription.trim()]);
       
       res.json({
         message: 'Settings updated successfully',

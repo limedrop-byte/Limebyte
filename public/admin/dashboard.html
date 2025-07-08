@@ -201,6 +201,23 @@
             outline: none;
         }
         
+        /* Responsive iframe styling */
+        .ql-editor iframe {
+            width: 100% !important;
+            height: 400px !important;
+            max-width: 100% !important;
+            margin: 1rem 0 !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .ql-editor iframe {
+                height: 250px !important;
+            }
+        }
+        
         .submit-button {
             padding: 0.75rem 2rem;
             background-color: #000;
@@ -505,6 +522,18 @@
                             <div class="form-help">This title will be displayed throughout the site</div>
                         </div>
                         
+                        <div class="form-group">
+                            <label for="site-description">Site Description</label>
+                            <input type="text" id="site-description" name="site_description" placeholder="Enter site description">
+                            <div class="form-help">This text appears under the main title on the homepage</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="footer-text">Footer Text</label>
+                            <input type="text" id="footer-text" name="footer_text" placeholder="Enter footer text">
+                            <div class="form-help">This text appears at the bottom of every page</div>
+                        </div>
+                        
                         <button type="submit" class="submit-button" id="settings-submit-button">
                             Save Settings
                         </button>
@@ -520,21 +549,65 @@
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
     <script>
+        // YouTube helper functions
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function createYouTubeEmbed(videoId) {
+            return `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+        }
+
+        function insertYouTubeVideo() {
+            const url = prompt('Enter YouTube URL:');
+            if (!url) return;
+            
+            const videoId = extractYouTubeId(url);
+            if (!videoId) {
+                alert('Please enter a valid YouTube URL');
+                return;
+            }
+            
+            const embedHTML = createYouTubeEmbed(videoId);
+            const range = quill.getSelection();
+            if (range) {
+                quill.clipboard.dangerouslyPasteHTML(range.index, embedHTML);
+            } else {
+                quill.clipboard.dangerouslyPasteHTML(embedHTML);
+            }
+        }
+
         // Initialize Quill editor
         const quill = new Quill('#editor', {
             theme: 'snow',
             placeholder: 'Write your post content here...',
             modules: {
-                toolbar: [
-                    [{ 'header': [1, 2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    ['blockquote', 'code-block'],
-                    ['link'],
-                    ['clean']
-                ]
+                toolbar: {
+                    container: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['blockquote', 'code-block'],
+                        ['link'],
+                        ['youtube'],
+                        ['clean']
+                    ],
+                    handlers: {
+                        'youtube': insertYouTubeVideo
+                    }
+                }
             }
         });
+
+        // Add custom button to toolbar
+        const toolbar = quill.getModule('toolbar');
+        const youtubeButton = document.querySelector('.ql-youtube');
+        if (youtubeButton) {
+            youtubeButton.innerHTML = '📺';
+            youtubeButton.title = 'Insert YouTube Video';
+        }
 
         // Tab functionality
         function showTab(tabName) {
@@ -959,8 +1032,10 @@
                 
                 const settings = await response.json();
                 
-                // Populate site title field
+                // Populate form fields
                 document.getElementById('site-title').value = settings.site_title || '';
+                document.getElementById('site-description').value = settings.site_description || '';
+                document.getElementById('footer-text').value = settings.footer_text || '';
                 
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -982,6 +1057,8 @@
             const button = document.getElementById('settings-submit-button');
             const messageDisplay = document.getElementById('settings-message-display');
             const siteTitle = document.getElementById('site-title').value;
+            const siteDescription = document.getElementById('site-description').value;
+            const footerText = document.getElementById('footer-text').value;
             
             button.disabled = true;
             button.textContent = 'Saving...';
@@ -1001,7 +1078,11 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ site_title: siteTitle })
+                    body: JSON.stringify({ 
+                        site_title: siteTitle,
+                        site_description: siteDescription,
+                        footer_text: footerText
+                    })
                 });
                 
                 const result = await response.json();
