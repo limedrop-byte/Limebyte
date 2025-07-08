@@ -276,6 +276,15 @@
             display: none;
         }
         
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .newsletter-banner {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+        }
+        
         /* Newsletter Modal */
         .newsletter-modal {
             display: none;
@@ -867,7 +876,7 @@
                     
                     return `
                         <article class="article">
-                            <a href="/post/${post.id}">
+                            <a href="/post/${post.slug || post.id}">
                                 <div class="article-content">
                                     <h2>${post.subject}</h2>
                                     <p>${preview}</p>

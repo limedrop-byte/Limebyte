@@ -41,7 +41,7 @@ app.get('/admin/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'dashboard.html'));
 });
 
-app.get('/post/:id', (req, res) => {
+app.get('/post/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'post.html'));
 });
 
@@ -73,10 +73,30 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Blog: http://localhost:${PORT}`);
-  console.log(`Admin: http://localhost:${PORT}/admin`);
+app.listen(PORT, '0.0.0.0', () => {
+  // Get local IP address
+  const { networkInterfaces } = require('os');
+  const nets = networkInterfaces();
+  let localIP = 'localhost';
+  
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+      if (net.family === 'IPv4' && !net.internal) {
+        localIP = net.address;
+        break;
+      }
+    }
+  }
+  
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`\n📱 Local access:`);
+  console.log(`   Blog: http://localhost:${PORT}`);
+  console.log(`   Admin: http://localhost:${PORT}/admin`);
+  console.log(`\n🌐 LAN access:`);
+  console.log(`   Blog: http://${localIP}:${PORT}`);
+  console.log(`   Admin: http://${localIP}:${PORT}/admin`);
+  console.log(`\n💡 Share this URL with others on your network!`);
   console.log(`\nTo set up the database, run: npm run setup-db`);
   console.log(`Default admin credentials: username=admin, password=admin`);
 }); 

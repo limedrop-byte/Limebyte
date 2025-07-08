@@ -4,6 +4,31 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper function to generate random 6-digit number slug
+function generateRandomSlug() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Helper function to ensure unique random slug
+async function ensureUniqueRandomSlug() {
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (attempts < maxAttempts) {
+    const slug = generateRandomSlug();
+    const result = await pool.query('SELECT id FROM posts WHERE slug = $1', [slug]);
+    
+    if (result.rows.length === 0) {
+      return slug;
+    }
+    
+    attempts++;
+  }
+  
+  // Fallback to timestamp-based if we somehow can't find a unique random number
+  return Date.now().toString().slice(-6);
+}
+
 // Get all posts (public)
 router.get('/', async (req, res) => {
   try {
@@ -20,16 +45,30 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get single post (public)
-router.get('/:id', async (req, res) => {
+// Get single post by slug (public)
+router.get('/:slug', async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await pool.query(`
+    const { slug } = req.params;
+    
+    // Try to find by slug first, fallback to ID for backwards compatibility
+    let query = `
       SELECT p.*, COALESCE(u.display_name, u.username) as author 
       FROM posts p 
       JOIN users u ON p.author_id = u.id 
-      WHERE p.id = $1
-    `, [id]);
+      WHERE p.slug = $1
+    `;
+    let result = await pool.query(query, [slug]);
+    
+    // If not found by slug and slug is numeric, try by ID (backwards compatibility)
+    if (result.rows.length === 0 && /^\d+$/.test(slug)) {
+      query = `
+        SELECT p.*, COALESCE(u.display_name, u.username) as author 
+        FROM posts p 
+        JOIN users u ON p.author_id = u.id 
+        WHERE p.id = $1
+      `;
+      result = await pool.query(query, [parseInt(slug)]);
+    }
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Post not found' });
@@ -51,11 +90,14 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Subject and message are required' });
     }
 
+    // Generate unique random slug
+    const slug = await ensureUniqueRandomSlug();
+
     const result = await pool.query(`
-      INSERT INTO posts (subject, message, author_id) 
-      VALUES ($1, $2, $3) 
+      INSERT INTO posts (subject, message, slug, author_id) 
+      VALUES ($1, $2, $3, $4) 
       RETURNING *
-    `, [subject, message, req.user.id]);
+    `, [subject, message, slug, req.user.id]);
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -64,28 +106,39 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Update post (protected)
-router.put('/:id', authenticateToken, async (req, res) => {
+// Update post (protected) - can accept either ID or slug
+router.put('/:identifier', authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const { identifier } = req.params;
     const { subject, message } = req.body;
     
     if (!subject || !message) {
       return res.status(400).json({ error: 'Subject and message are required' });
     }
 
-    // Check if post exists and belongs to user (or user is admin)
-    const checkResult = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
-    if (checkResult.rows.length === 0) {
+    // Find post by slug first, fallback to ID for backwards compatibility
+    let slugResult = await pool.query('SELECT * FROM posts WHERE slug = $1', [identifier]);
+    let post = slugResult.rows[0];
+    
+    // If not found by slug and identifier is numeric, try by ID (backwards compatibility)
+    if (!post && /^\d+$/.test(identifier)) {
+      const idResult = await pool.query('SELECT * FROM posts WHERE id = $1', [parseInt(identifier)]);
+      post = idResult.rows[0];
+    }
+
+    if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
+    // Keep the existing slug - never change it to avoid broken links
+    const slug = post.slug;
+
     const result = await pool.query(`
       UPDATE posts 
-      SET subject = $1, message = $2, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = $3 
+      SET subject = $1, message = $2, slug = $3, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $4 
       RETURNING *
-    `, [subject, message, id]);
+    `, [subject, message, slug, post.id]);
 
     res.json(result.rows[0]);
   } catch (error) {
@@ -94,18 +147,26 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete post (protected)
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Delete post (protected) - can accept either ID or slug
+router.delete('/:identifier', authenticateToken, async (req, res) => {
   try {
-    const { id } = req.params;
+    const { identifier } = req.params;
 
-    // Check if post exists
-    const checkResult = await pool.query('SELECT * FROM posts WHERE id = $1', [id]);
-    if (checkResult.rows.length === 0) {
+    // Find post by slug first, fallback to ID for backwards compatibility
+    let slugResult = await pool.query('SELECT * FROM posts WHERE slug = $1', [identifier]);
+    let post = slugResult.rows[0];
+    
+    // If not found by slug and identifier is numeric, try by ID (backwards compatibility)
+    if (!post && /^\d+$/.test(identifier)) {
+      const idResult = await pool.query('SELECT * FROM posts WHERE id = $1', [parseInt(identifier)]);
+      post = idResult.rows[0];
+    }
+
+    if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    await pool.query('DELETE FROM posts WHERE id = $1', [id]);
+    await pool.query('DELETE FROM posts WHERE id = $1', [post.id]);
     res.json({ message: 'Post deleted successfully' });
   } catch (error) {
     console.error('Error deleting post:', error);
