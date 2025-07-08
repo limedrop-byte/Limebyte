@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
 
-// Static secret key for JWT signing (in production, use environment variable)
-const JWT_SECRET = process.env.JWT_SECRET || 'limebyte-blog-secret-key-2024';
+// JWT secret must be provided via environment variable
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 const JWT_CONFIG = {
   secret: JWT_SECRET,
