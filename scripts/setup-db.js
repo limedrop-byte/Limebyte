@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');

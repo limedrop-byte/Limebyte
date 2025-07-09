@@ -7,6 +7,7 @@ A simple blog app with admin backend built with Node.js and PostgreSQL.
 - Node.js (v14 or higher)
 - PostgreSQL
 - npm
+- NGINX (for production)
 
 ## Installation
 
@@ -44,15 +45,69 @@ A simple blog app with admin backend built with Node.js and PostgreSQL.
    npm run deploy
    ```
 
-5. **Start the server:**
+5. **Set up NGINX (Production):**
+   
+   **For RunCloud:** Add this to your NGINX config:
+   ```nginx
+   # API routes - proxy to Node.js backend
+   location /api/ {
+       proxy_pass http://0.0.0.0:3000;
+       proxy_buffering off;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-Host $host;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header Host $host;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+   }
+
+   # Everything else - proxy to Node.js
+   location / {
+       proxy_pass http://0.0.0.0:3000;
+       proxy_buffering off;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-Host $host;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header Host $host;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+   }
+   ```
+
+   Test and reload NGINX:
    ```bash
-   npm start
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+6. **Start with PM2 (Production):**
+   ```bash
+   # Install PM2
+   npm install -g pm2
+   
+   # Start app
+   pm2 start server.js --name "limebyte-blog"
+   
+   # Save PM2 config
+   pm2 save
+   
+   # Auto-start on reboot
+   pm2 startup
+   ```
+
+7. **Development mode:**
+   ```bash
+   npm run dev
    ```
 
 ## Usage
 
-- **Blog:** `http://localhost:3000`
-- **Admin:** `http://localhost:3000/admin`
+- **Blog:** `http://localhost:3000` or `https://yourdomain.com`
+- **Admin:** `http://localhost:3000/admin` or `https://yourdomain.com/admin`
 - **Default login:** username=`admin`, password=`admin`
 
 ## Scripts
