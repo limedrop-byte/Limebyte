@@ -731,7 +731,7 @@
 
 
     <!-- Newsletter Banner -->
-    <div class="newsletter-banner" id="newsletter-banner">
+    <div class="newsletter-banner hidden" id="newsletter-banner">
         Join Newsletter
     </div>
 
@@ -1285,8 +1285,7 @@
                     url: url
                 }).catch(error => {
                     console.log('Error sharing:', error);
-                    // Fallback to desktop dropdown if native sharing fails
-                    toggleShareDropdown();
+                    // Don't show dropdown on mobile - just log the error
                 });
             } else {
                 // Desktop - show dropdown
@@ -1343,8 +1342,30 @@
             }
         }
 
+        // Check newsletter subscription status by IP
+        async function checkNewsletterSubscription() {
+            try {
+                const response = await fetch('/api/newsletter/check-ip');
+                const result = await response.json();
+                
+                if (!result.subscribed) {
+                    // Show the newsletter banner if IP hasn't subscribed yet
+                    const banner = document.getElementById('newsletter-banner');
+                    banner.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking newsletter subscription:', error);
+                // Show banner on error (default behavior)
+                const banner = document.getElementById('newsletter-banner');
+                banner.classList.remove('hidden');
+            }
+        }
+
         // Load post when page loads
-        document.addEventListener('DOMContentLoaded', loadPost);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPost();
+            checkNewsletterSubscription();
+        });
     </script>
 </body>
 </html> 

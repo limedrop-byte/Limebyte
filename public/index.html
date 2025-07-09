@@ -419,24 +419,21 @@
             display: inline-flex;
             align-items: center;
             padding: 0.625rem 1.125rem;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            color: #334155;
+            background: transparent;
+            color: #374151;
             text-decoration: none;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #9ca3af;
             border-radius: 0.5rem;
             font-size: 0.875rem;
             font-weight: 400;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             min-height: 2.5rem;
         }
         
         .link-item a:hover {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-color: #cbd5e1;
-            color: #1e293b;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: transparent;
+            border-color: #374151;
+            color: #1f2937;
         }
         
         .link-item a:active {
@@ -800,7 +797,7 @@
     </main>
 
     <!-- Newsletter Banner -->
-    <div class="newsletter-banner" id="newsletter-banner">
+    <div class="newsletter-banner hidden" id="newsletter-banner">
         Join Newsletter
     </div>
 
@@ -1128,12 +1125,32 @@
             }
         }
 
+        // Check newsletter subscription status by IP
+        async function checkNewsletterSubscription() {
+            try {
+                const response = await fetch('/api/newsletter/check-ip');
+                const result = await response.json();
+                
+                if (!result.subscribed) {
+                    // Show the newsletter banner if IP hasn't subscribed yet
+                    const banner = document.getElementById('newsletter-banner');
+                    banner.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking newsletter subscription:', error);
+                // Show banner on error (default behavior)
+                const banner = document.getElementById('newsletter-banner');
+                banner.classList.remove('hidden');
+            }
+        }
+
         // Load articles and update UI when page loads
         document.addEventListener('DOMContentLoaded', () => {
             updateAdminUI();
             loadArticles();
             loadLinks();
             loadSiteSettings();
+            checkNewsletterSubscription();
             
             // Initialize search and sort functionality
             initializeSearch();
