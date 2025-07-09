@@ -356,6 +356,12 @@
             font-size: 0.875rem;
         }
         
+        .ip-cell {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
         .date-cell {
             color: #6b7280;
             font-size: 0.875rem;
@@ -709,6 +715,7 @@
                     <thead>
                         <tr>
                             <th>Email</th>
+                            <th>IP Address</th>
                             <th>Subscribed</th>
                         </tr>
                     </thead>
@@ -716,6 +723,7 @@
                         ${subscribers.map(subscriber => `
                             <tr>
                                 <td class="email-cell">${subscriber.email}</td>
+                                <td class="ip-cell">${subscriber.ip_address || '-'}</td>
                                 <td class="date-cell">${new Date(subscriber.created_at).toLocaleDateString('en-US', {
                                     year: 'numeric',
                                     month: 'short', 

@@ -16,6 +16,9 @@ const settingsRoutes = require('./routes/settings');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy to get real IP addresses
+app.set('trust proxy', true);
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -100,6 +103,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   Blog: http://${localIP}:${PORT}`);
   console.log(`   Admin: http://${localIP}:${PORT}/admin`);
   console.log(`\n💡 Share this URL with others on your network!`);
-  console.log(`\nTo set up the database, run: npm run setup-db`);
+  console.log(`\nTo set up the database, run: npm run deploy`);
   console.log(`Default admin credentials: username=admin, password=admin`);
 }); 

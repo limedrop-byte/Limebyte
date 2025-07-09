@@ -1,6 +1,6 @@
 # LIMEBYTE Blog
 
-A simple blog app with admin backend built with Node.js and PostgreSQL.
+A modern, lightweight blog platform with newsletter subscription capabilities and a secure admin dashboard. Built using Node.js and PostgreSQL for robust performance and data management.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ A simple blog app with admin backend built with Node.js and PostgreSQL.
 
 5. **Set up NGINX (Production):**
    
-   **For RunCloud:** Add this to your NGINX config:
+   Add this to your NGINX config:
    ```nginx
    # API routes - proxy to Node.js backend
    location /api/ {
@@ -114,6 +114,7 @@ A simple blog app with admin backend built with Node.js and PostgreSQL.
 
 - `npm start` - Start the server
 - `npm run deploy` - Fresh database deployment
+- `npm run migrate` - Run database migrations
 - `npm run dev` - Development mode with nodemon
 
 That's it! 🚀 

@@ -4,6 +4,31 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Check if IP has already subscribed
+router.get('/check-ip', async (req, res) => {
+  try {
+    // Get IP address from request
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0];
+    
+    if (!ipAddress) {
+      return res.json({ subscribed: false });
+    }
+    
+    // Check if this IP has already subscribed
+    const result = await pool.query(`
+      SELECT id FROM subscribers 
+      WHERE ip_address = $1 
+      LIMIT 1
+    `, [ipAddress]);
+    
+    res.json({ subscribed: result.rows.length > 0 });
+    
+  } catch (error) {
+    console.error('Error checking IP subscription:', error);
+    res.json({ subscribed: false }); // Default to not subscribed on error
+  }
+});
+
 // Subscribe to newsletter
 router.post('/subscribe', async (req, res) => {
   try {
@@ -19,11 +44,14 @@ router.post('/subscribe', async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
-    // Insert email into subscribers table
+    // Get IP address from request
+    const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for']?.split(',')[0];
+
+    // Insert email and IP into subscribers table
     await pool.query(`
-      INSERT INTO subscribers (email) 
-      VALUES ($1)
-    `, [email.toLowerCase().trim()]);
+      INSERT INTO subscribers (email, ip_address) 
+      VALUES ($1, $2)
+    `, [email.toLowerCase().trim(), ipAddress]);
 
     res.json({ message: 'Successfully subscribed to newsletter!' });
     
@@ -43,7 +71,7 @@ router.post('/subscribe', async (req, res) => {
 router.get('/subscribers', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, email, created_at 
+      SELECT id, email, ip_address, created_at 
       FROM subscribers 
       ORDER BY created_at DESC
     `);
@@ -59,20 +87,20 @@ router.get('/subscribers', authenticateToken, async (req, res) => {
 router.get('/subscribers/export', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT email, created_at 
+      SELECT email, ip_address, created_at 
       FROM subscribers 
       ORDER BY created_at DESC
     `);
     
     // Create CSV content
-    const csvHeader = 'Email,Subscribed Date\n';
+    const csvHeader = 'Email,IP Address,Subscribed Date\n';
     const csvContent = result.rows.map(subscriber => {
       const formattedDate = new Date(subscriber.created_at).toLocaleDateString('en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
       });
-      return `"${subscriber.email}","${formattedDate}"`;
+      return `"${subscriber.email}","${subscriber.ip_address || ''}","${formattedDate}"`;
     }).join('\n');
     
     const csv = csvHeader + csvContent;
