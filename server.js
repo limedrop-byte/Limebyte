@@ -12,6 +12,7 @@ const postsRoutes = require('./routes/posts');
 const newsletterRoutes = require('./routes/newsletter');
 const linksRoutes = require('./routes/links');
 const settingsRoutes = require('./routes/settings');
+const databaseRoutes = require('./routes/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,7 @@ app.use('/api/posts', postsRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/links', linksRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/database', databaseRoutes);
 
 // Route handlers for frontend pages
 app.get('/', (req, res) => {

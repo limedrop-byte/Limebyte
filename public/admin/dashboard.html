@@ -386,6 +386,171 @@
             margin-bottom: 0.5rem;
             color: #374151;
         }
+        
+        /* Database Management */
+        .database-section {
+            background: #fff;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .database-section h2 {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #000;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .database-section p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .database-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .database-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .database-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .database-btn-export {
+            background-color: #10b981;
+            color: #fff;
+        }
+        
+        .database-btn-export:hover:not(:disabled) {
+            background-color: #059669;
+        }
+        
+        .database-btn-import {
+            background-color: #3b82f6;
+            color: #fff;
+        }
+        
+        .database-btn-import:hover:not(:disabled) {
+            background-color: #2563eb;
+        }
+        
+        .import-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f3f4f6;
+        }
+        
+        .import-section h3 {
+            font-size: 1.25rem;
+            font-weight: 300;
+            color: #000;
+            margin-bottom: 1rem;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .file-input-label:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .file-selected {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .import-warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .import-warning h4 {
+            color: #92400e;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .import-warning p {
+            color: #92400e;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        .database-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 300;
+        }
+        
+        .database-status.success {
+            background-color: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        
+        .database-status.error {
+            background-color: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .database-status.info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -416,6 +581,7 @@
                 <button class="tab-button" onclick="showTab('subscribers')">Newsletter Subscribers</button>
                 <button class="tab-button" onclick="showTab('profile')">Profile</button>
                 <button class="tab-button" onclick="showTab('settings')">Settings</button>
+                <button class="tab-button" onclick="showTab('database')">Database</button>
             </div>
 
             <!-- Posts Tab -->
@@ -546,6 +712,50 @@
                         
                         <div id="settings-message-display"></div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Database Tab -->
+            <div id="database-tab" class="tab-content">
+                <!-- Export Section -->
+                <div class="database-section">
+                    <h2>Export Database</h2>
+                    <p>Download a complete backup of your database including posts, subscribers, links, and settings.</p>
+                    
+                    <div class="database-actions">
+                        <button class="database-btn database-btn-export" id="export-database-btn" onclick="exportDatabase()">
+                            📥 Export Database
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Import Section -->
+                <div class="database-section">
+                    <h2>Import Database</h2>
+                    <p>Restore your database from a backup file. This will replace all current data.</p>
+                    
+                    <div class="import-warning">
+                        <h4>⚠️ Warning</h4>
+                        <p>Importing will replace all existing posts, subscribers, links, and settings. This action cannot be undone. Make sure to export your current data first.</p>
+                    </div>
+                    
+                    <div class="import-section">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="backup-file" class="file-input" accept=".json" onchange="handleFileSelect(this)">
+                            <label for="backup-file" class="file-input-label">
+                                📁 Choose Backup File
+                            </label>
+                        </div>
+                        <div id="file-selected" class="file-selected"></div>
+                        
+                        <div class="database-actions">
+                            <button class="database-btn database-btn-import" id="import-database-btn" onclick="importDatabase()" disabled>
+                                📤 Import Database
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="database-status"></div>
                 </div>
             </div>
         </div>
@@ -1110,6 +1320,135 @@
                 button.textContent = 'Save Settings';
             }
         });
+
+        // Database Export function
+        async function exportDatabase() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
+            
+            const exportBtn = document.getElementById('export-database-btn');
+            const originalText = exportBtn.textContent;
+            const statusDiv = document.getElementById('database-status');
+            
+            exportBtn.disabled = true;
+            exportBtn.textContent = '📥 Exporting...';
+            statusDiv.innerHTML = '<div class="database-status info">Preparing database export...</div>';
+            
+            try {
+                const response = await fetch('/api/database/export', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                
+                // Create download link
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `limebyte_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                statusDiv.innerHTML = '<div class="database-status success">✅ Database exported successfully!</div>';
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                statusDiv.innerHTML = '<div class="database-status error">❌ Failed to export database. Please try again.</div>';
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(input) {
+            const fileSelectedDiv = document.getElementById('file-selected');
+            const importBtn = document.getElementById('import-database-btn');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                fileSelectedDiv.textContent = `Selected: ${file.name}`;
+                importBtn.disabled = false;
+            } else {
+                fileSelectedDiv.textContent = '';
+                importBtn.disabled = true;
+            }
+        }
+
+        // Database Import function
+        async function importDatabase() {
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
+            
+            const fileInput = document.getElementById('backup-file');
+            const importBtn = document.getElementById('import-database-btn');
+            const originalText = importBtn.textContent;
+            const statusDiv = document.getElementById('database-status');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                statusDiv.innerHTML = '<div class="database-status error">❌ Please select a backup file first.</div>';
+                return;
+            }
+            
+            // Confirm import
+            if (!confirm('Are you sure you want to import this database backup? This will replace all existing data and cannot be undone.')) {
+                return;
+            }
+            
+            importBtn.disabled = true;
+            importBtn.textContent = '📤 Importing...';
+            statusDiv.innerHTML = '<div class="database-status info">Importing database backup...</div>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('backup', fileInput.files[0]);
+                
+                const response = await fetch('/api/database/import', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let statsText = '';
+                    if (result.stats) {
+                        statsText = `<br><strong>Imported:</strong> ${result.stats.posts} posts, ${result.stats.subscribers} subscribers, ${result.stats.links} links, ${result.stats.settings} settings`;
+                    }
+                    statusDiv.innerHTML = `<div class="database-status success">✅ Database imported successfully!${statsText}</div>`;
+                    
+                    // Clear file selection
+                    fileInput.value = '';
+                    document.getElementById('file-selected').textContent = '';
+                    
+                } else {
+                    statusDiv.innerHTML = `<div class="database-status error">❌ Import failed: ${result.error}</div>`;
+                }
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                statusDiv.innerHTML = '<div class="database-status error">❌ Failed to import database. Please try again.</div>';
+            } finally {
+                importBtn.disabled = true;
+                importBtn.textContent = originalText;
+            }
+        }
 
         // Logout function
         function logout() {
