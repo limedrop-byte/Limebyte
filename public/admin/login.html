@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - LIMEBYTE</title>
+    <title>Admin Login</title>
     <meta name="description" content="Admin login for blog management">
     <script>
         // Apply dark mode immediately to prevent flash
@@ -275,7 +275,7 @@
 
             <!-- Logo -->
             <div class="logo">
-                <h1 id="site-title-header">LIMEBYTE</h1>
+                <h1 id="site-title-header"></h1>
             </div>
 
             <!-- Login Form -->
@@ -388,10 +388,21 @@
                     if (settings.site_title) {
                         document.getElementById('site-title-header').textContent = settings.site_title;
                         document.title = `Admin Login - ${settings.site_title}`;
+                    } else {
+                        // Fallback if no custom title is set
+                        document.getElementById('site-title-header').textContent = 'Blog';
+                        document.title = 'Admin Login';
                     }
+                } else {
+                    // Fallback if API call fails
+                    document.getElementById('site-title-header').textContent = 'Blog';
+                    document.title = 'Admin Login';
                 }
             } catch (error) {
                 console.error('Error loading site settings:', error);
+                // Fallback if there's an error
+                document.getElementById('site-title-header').textContent = 'Blog';
+                document.title = 'Admin Login';
             }
         }
 

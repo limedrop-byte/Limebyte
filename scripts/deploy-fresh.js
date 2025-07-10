@@ -41,6 +41,7 @@ async function deployFresh() {
         slug VARCHAR(255) UNIQUE NOT NULL,
         author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         view_count INTEGER DEFAULT 0 NOT NULL,
+        pinned BOOLEAN DEFAULT FALSE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -50,6 +51,7 @@ async function deployFresh() {
     await pool.query(`CREATE INDEX idx_posts_slug ON posts(slug);`);
     await pool.query(`CREATE INDEX idx_posts_view_count ON posts(view_count);`);
     await pool.query(`CREATE INDEX idx_posts_created_at ON posts(created_at);`);
+    await pool.query(`CREATE INDEX idx_posts_pinned ON posts(pinned);`);
     
     // Create links table
     await pool.query(`

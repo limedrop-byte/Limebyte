@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Articles - LIMEBYTE</title>
+    <title>Articles</title>
     <meta name="description" content="Technical insights and updates from LIMEBYTE">
     <script>
         // Apply dark mode immediately to prevent flash
@@ -110,6 +110,60 @@
 
         html.dark-mode .logo p {
             color: #ccc;
+        }
+
+        /* Dark mode styles for New dropdown */
+        html.dark-mode .new-dropdown-btn {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .new-dropdown-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        html.dark-mode .new-dropdown-menu {
+            background-color: #111;
+            border-color: #333;
+        }
+
+        html.dark-mode .new-dropdown-menu a,
+        html.dark-mode .new-dropdown-menu button {
+            color: #fff;
+        }
+
+        html.dark-mode .new-dropdown-menu a:hover,
+        html.dark-mode .new-dropdown-menu button:hover {
+            background-color: #222;
+        }
+
+        /* Dark mode styles for Newsletter */
+        html.dark-mode .newsletter-banner {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .newsletter-banner:hover {
+            background-color: #e5e7eb;
+        }
+
+        html.dark-mode .newsletter-btn-primary {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .newsletter-btn-primary:hover {
+            background-color: #e5e7eb;
+        }
+
+        html.dark-mode .newsletter-btn-secondary {
+            background-color: #222;
+            color: #ccc;
+        }
+
+        html.dark-mode .newsletter-btn-secondary:hover {
+            background-color: #333;
+            color: #fff;
         }
         
         .container {
@@ -354,6 +408,31 @@
             line-height: 1.7;
             margin-bottom: 1rem;
             font-weight: 300;
+        }
+
+        /* Pinned badge styling */
+        .pinned-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pinned-badge svg {
+            width: 0.875rem;
+            height: 0.875rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        html.dark-mode .pinned-badge {
+            color: #9ca3af;
         }
         
         .article-meta {
@@ -881,7 +960,7 @@
             <!-- Logo -->
             <div class="logo">
                 <div class="logo-header">
-                    <h1 id="site-title-header">LIMEBYTE</h1>
+                    <h1 id="site-title-header"></h1>
                     <!-- New Dropdown -->
                     <div class="new-dropdown" id="new-dropdown" style="display: none;">
                         <button class="new-dropdown-btn" id="new-dropdown-btn">New ▼</button>
@@ -1234,10 +1313,21 @@
                         highlightedTitle = post.subject.replace(regex, '<mark>$1</mark>');
                     }
                     
+                    // Add pinned badge
+                    const pinnedBadge = post.pinned ? `
+                        <div class="pinned-badge">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M9 12L10 9H14L15 12M12 12V19M7 12H17" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Pinned
+                        </div>
+                    ` : '';
+                    
                     return `
-                        <article class="article">
+                        <article class="article${post.pinned ? ' pinned' : ''}">
                             <a href="/post/${post.slug || post.id}">
                                 <div class="article-content">
+                                    ${pinnedBadge}
                                     <h2>${highlightedTitle}</h2>
                                     <p>${preview}</p>
                                     <div class="article-meta">
@@ -1276,6 +1366,10 @@
                     if (settings.site_title) {
                         document.getElementById('site-title-header').textContent = settings.site_title;
                         document.title = `Articles - ${settings.site_title}`;
+                    } else {
+                        // Fallback if no custom title is set
+                        document.getElementById('site-title-header').textContent = 'Blog';
+                        document.title = 'Articles';
                     }
                     
                     // Update site description
@@ -1296,6 +1390,9 @@
                 }
             } catch (error) {
                 console.error('Error loading site settings:', error);
+                // Fallback if there's an error
+                document.getElementById('site-title-header').textContent = 'Blog';
+                document.title = 'Articles';
             }
         }
 

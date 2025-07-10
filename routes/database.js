@@ -96,12 +96,13 @@ router.post('/import', authenticateToken, upload.single('backup'), async (req, r
             if (importData.tables.posts && Array.isArray(importData.tables.posts)) {
                 for (const post of importData.tables.posts) {
                     await client.query(`
-                        INSERT INTO posts (subject, message, slug, author_id, view_count, created_at, updated_at)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        INSERT INTO posts (subject, message, slug, author_id, view_count, pinned, created_at, updated_at)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                         ON CONFLICT (slug) DO UPDATE SET
                         subject = EXCLUDED.subject,
                         message = EXCLUDED.message,
                         view_count = EXCLUDED.view_count,
+                        pinned = EXCLUDED.pinned,
                         updated_at = EXCLUDED.updated_at
                     `, [
                         post.subject,
@@ -109,6 +110,7 @@ router.post('/import', authenticateToken, upload.single('backup'), async (req, r
                         post.slug,
                         post.author_id || 1, // Default to admin user
                         post.view_count || 0,
+                        post.pinned || false, // Default to unpinned
                         post.created_at,
                         post.updated_at
                     ]);

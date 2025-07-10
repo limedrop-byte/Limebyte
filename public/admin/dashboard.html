@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - LIMEBYTE</title>
+    <title>Admin Dashboard</title>
     <meta name="description" content="Admin dashboard for managing blog posts">
     
     <script>
@@ -53,6 +53,19 @@
             background-color: #000;
             color: #fff;
             border-color: #333;
+        }
+
+        html.dark-mode .subscribers-table-wrapper {
+            border-color: #333;
+            scrollbar-color: #666 transparent;
+        }
+        
+        html.dark-mode .subscribers-table-wrapper::-webkit-scrollbar-thumb {
+            background-color: #666;
+        }
+        
+        html.dark-mode .subscribers-table-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: #888;
         }
 
         html.dark-mode .subscribers-table {
@@ -248,6 +261,7 @@
             justify-content: center;
             transition: all 0.2s ease;
             margin-left: 1rem;
+            margin-right: 1rem;
         }
 
         .dark-mode-toggle svg {
@@ -543,9 +557,37 @@
             font-weight: 300;
         }
         
+        .subscribers-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+            /* Custom scrollbar for better appearance */
+            scrollbar-width: thin;
+            scrollbar-color: #d1d5db transparent;
+        }
+        
+        .subscribers-table-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .subscribers-table-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .subscribers-table-wrapper::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 4px;
+        }
+        
+        .subscribers-table-wrapper::-webkit-scrollbar-thumb:hover {
+            background-color: #9ca3af;
+        }
+        
         .subscribers-table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px; /* Minimum width to prevent table from being too cramped */
         }
         
         .subscribers-table th,
@@ -553,6 +595,7 @@
             text-align: left;
             padding: 0.75rem;
             border-bottom: 1px solid #f3f4f6;
+            white-space: nowrap; /* Prevent text wrapping */
         }
         
         .subscribers-table th {
@@ -575,17 +618,20 @@
         .email-cell {
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 0.875rem;
+            min-width: 200px; /* Ensure enough space for email addresses */
         }
         
         .ip-cell {
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 0.875rem;
             color: #6b7280;
+            min-width: 120px; /* Ensure enough space for IP addresses */
         }
         
         .date-cell {
             color: #6b7280;
             font-size: 0.875rem;
+            min-width: 130px; /* Ensure enough space for date/time */
         }
         
         .loading-table {
@@ -792,7 +838,7 @@
 
             <!-- Logo -->
             <div class="logo">
-                <h1 id="site-title-header">LIMEBYTE</h1>
+                <h1 id="site-title-header"></h1>
             </div>
 
 
@@ -1143,30 +1189,32 @@
             
             // Generate table
             const tableHTML = `
-                <table class="subscribers-table">
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>IP Address</th>
-                            <th>Subscribed</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${subscribers.map(subscriber => `
+                <div class="subscribers-table-wrapper">
+                    <table class="subscribers-table">
+                        <thead>
                             <tr>
-                                <td class="email-cell">${subscriber.email}</td>
-                                <td class="ip-cell">${subscriber.ip_address || '-'}</td>
-                                <td class="date-cell">${new Date(subscriber.created_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}</td>
+                                <th>Email</th>
+                                <th>IP Address</th>
+                                <th>Subscribed</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${subscribers.map(subscriber => `
+                                <tr>
+                                    <td class="email-cell">${subscriber.email}</td>
+                                    <td class="ip-cell">${subscriber.ip_address || '-'}</td>
+                                    <td class="date-cell">${new Date(subscriber.created_at).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short', 
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             `;
             
             container.innerHTML = tableHTML;
@@ -1227,10 +1275,21 @@
                     if (settings.site_title) {
                         document.getElementById('site-title-header').textContent = settings.site_title;
                         document.title = `Admin Dashboard - ${settings.site_title}`;
+                    } else {
+                        // Fallback if no custom title is set
+                        document.getElementById('site-title-header').textContent = 'Blog';
+                        document.title = 'Admin Dashboard';
                     }
+                } else {
+                    // Fallback if API call fails
+                    document.getElementById('site-title-header').textContent = 'Blog';
+                    document.title = 'Admin Dashboard';
                 }
             } catch (error) {
                 console.error('Error loading site settings:', error);
+                // Fallback if there's an error
+                document.getElementById('site-title-header').textContent = 'Blog';
+                document.title = 'Admin Dashboard';
             }
         }
 

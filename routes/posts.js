@@ -46,12 +46,15 @@ router.get('/', async (req, res) => {
       params.push(`%${search}%`);
     }
     
-    // Add sorting
-    let orderBy = 'p.created_at DESC'; // default
+    // Add sorting - always prioritize pinned posts first
+    let orderBy = 'p.pinned DESC'; // Pinned posts first
+    
     if (sortBy === 'date') {
-      orderBy = sortOrder === 'asc' ? 'p.created_at ASC' : 'p.created_at DESC';
+      orderBy += sortOrder === 'asc' ? ', p.created_at ASC' : ', p.created_at DESC';
     } else if (sortBy === 'views') {
-      orderBy = sortOrder === 'asc' ? 'p.view_count ASC, p.created_at DESC' : 'p.view_count DESC, p.created_at DESC';
+      orderBy += sortOrder === 'asc' ? ', p.view_count ASC, p.created_at DESC' : ', p.view_count DESC, p.created_at DESC';
+    } else {
+      orderBy += ', p.created_at DESC'; // default fallback
     }
     
     query += ` ORDER BY ${orderBy}`;
@@ -170,6 +173,45 @@ router.put('/:identifier', authenticateToken, async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error updating post:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Toggle pin status (protected) - can accept either ID or slug
+router.patch('/:identifier/pin', authenticateToken, async (req, res) => {
+  try {
+    const { identifier } = req.params;
+
+    // Find post by slug first, fallback to ID for backwards compatibility
+    let slugResult = await pool.query('SELECT * FROM posts WHERE slug = $1', [identifier]);
+    let post = slugResult.rows[0];
+    
+    // If not found by slug and identifier is numeric, try by ID (backwards compatibility)
+    if (!post && /^\d+$/.test(identifier)) {
+      const idResult = await pool.query('SELECT * FROM posts WHERE id = $1', [parseInt(identifier)]);
+      post = idResult.rows[0];
+    }
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Toggle the pinned status
+    const newPinnedStatus = !post.pinned;
+    
+    const result = await pool.query(`
+      UPDATE posts 
+      SET pinned = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $2 
+      RETURNING *
+    `, [newPinnedStatus, post.id]);
+
+    res.json({ 
+      message: `Post ${newPinnedStatus ? 'pinned' : 'unpinned'} successfully`,
+      post: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error toggling pin status:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

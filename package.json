@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "migrate": "node scripts/migrate.js",
+    "migrate-pin": "node scripts/migrate-pin.js",
     "deploy": "node scripts/deploy-fresh.js"
   },
   "dependencies": {
