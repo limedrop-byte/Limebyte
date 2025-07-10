@@ -6,6 +6,16 @@
     <title id="page-title">Loading...</title>
     <meta name="description" content="" id="page-description">
     
+    <script>
+        // Apply dark mode immediately to prevent flash
+        (function() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
+    
     <!-- Quill.js CDN -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <style>
@@ -21,6 +31,87 @@
             color: #000;
             background-color: #fff;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark mode styles */
+        html.dark-mode body {
+            color: #fff;
+            background-color: #000;
+        }
+
+        html.dark-mode .article-header h1 {
+            color: #fff;
+        }
+
+        html.dark-mode .article-meta {
+            color: #ccc;
+        }
+
+        html.dark-mode .article-meta span {
+            color: #999;
+        }
+
+        html.dark-mode .article-content {
+            color: #ccc;
+        }
+
+        html.dark-mode .article-content h1,
+        html.dark-mode .article-content h2,
+        html.dark-mode .article-content h3 {
+            color: #fff;
+        }
+
+        html.dark-mode .article-content blockquote {
+            border-color: #333;
+            color: #999;
+        }
+
+        html.dark-mode .article-content code {
+            background-color: #222;
+            color: #ccc;
+        }
+
+        html.dark-mode .article-content pre {
+            background-color: #111;
+            border-color: #333;
+        }
+
+        html.dark-mode .share-dropdown-content {
+            background-color: #111;
+            border-color: #333;
+        }
+
+        html.dark-mode .share-option {
+            color: #ccc;
+            background: #111;
+        }
+
+        html.dark-mode .share-option:hover {
+            background-color: #222;
+        }
+
+        html.dark-mode .newsletter-modal-content {
+            background-color: #111;
+            color: #fff;
+        }
+
+        html.dark-mode .newsletter-form input[type="email"] {
+            background-color: #000;
+            color: #fff;
+            border-color: #333;
+        }
+
+        html.dark-mode .footer {
+            border-color: #333;
+        }
+
+        html.dark-mode .logo h1 {
+            color: #fff;
+        }
+
+        html.dark-mode .logo p {
+            color: #ccc;
         }
         
                 .container {
@@ -53,6 +144,52 @@
             top: 1rem;
             right: 1.5rem;
             display: none;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .dark-mode-toggle svg {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dark-mode-toggle:hover {
+            border-color: #9ca3af;
+            transform: scale(1.05);
+        }
+
+        html.dark-mode .dark-mode-toggle {
+            border-color: #333;
+            color: #fff;
+        }
+
+        html.dark-mode .dark-mode-toggle:hover {
+            border-color: #666;
+        }
+
+        /* Admin panel positioned when dark mode toggle is visible */
+        .admin-panel.with-toggle {
+            right: 5rem;
         }
         
         .admin-panel a {
@@ -706,6 +843,11 @@
 <body>
     <main>
         <div class="container">
+            <!-- Dark Mode Toggle -->
+            <button class="dark-mode-toggle" id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+                <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+
             <!-- Admin Panel -->
             <div class="admin-panel" id="admin-panel">
                 <a href="/admin/dashboard"></a>
@@ -805,6 +947,35 @@
             return !!localStorage.getItem('authToken');
         }
 
+        // Dark mode functionality
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('dark-mode-toggle');
+            
+            html.classList.toggle('dark-mode');
+            
+            if (html.classList.contains('dark-mode')) {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        function initDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            const html = document.documentElement;
+            const toggle = document.getElementById('dark-mode-toggle');
+            
+            if (darkMode === 'enabled') {
+                html.classList.add('dark-mode');
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+            } else {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            }
+        }
+
         // Confetti celebration animation
         function celebrateWithConfetti() {
             // Create multiple bursts of confetti
@@ -882,8 +1053,10 @@
                 const adminPanel = document.getElementById('admin-panel');
                 if (isAdmin()) {
                     adminPanel.style.display = 'block';
+                    adminPanel.classList.add('with-toggle');
                 } else {
                     adminPanel.style.display = 'none';
+                    adminPanel.classList.remove('with-toggle');
                 }
                 
                 // Display post content
@@ -1363,6 +1536,7 @@
 
         // Load post when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
             loadPost();
             checkNewsletterSubscription();
         });

@@ -6,6 +6,16 @@
     <title>Admin Dashboard - LIMEBYTE</title>
     <meta name="description" content="Admin dashboard for managing blog posts">
     
+    <script>
+        // Apply dark mode immediately to prevent flash
+        (function() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.documentElement.classList.add('dark-mode');
+            }
+        })();
+    </script>
+    
     <!-- Quill.js CDN -->
     <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     
@@ -22,6 +32,178 @@
             color: #000;
             background-color: #fff;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark mode styles */
+        html.dark-mode body {
+            color: #fff;
+            background-color: #000;
+        }
+
+        html.dark-mode .post-form,
+        html.dark-mode .subscribers-section,
+        html.dark-mode .database-section {
+            background-color: #111;
+            border-color: #333;
+        }
+
+        html.dark-mode .form-group input,
+        html.dark-mode .form-group select {
+            background-color: #000;
+            color: #fff;
+            border-color: #333;
+        }
+
+        html.dark-mode .subscribers-table {
+            color: #fff;
+        }
+
+        html.dark-mode .subscribers-table th {
+            color: #fff;
+        }
+
+        html.dark-mode .subscribers-table tbody tr:hover {
+            background-color: #222;
+        }
+
+        html.dark-mode .database-status.success {
+            background-color: #0f3f2e;
+            border-color: #10b981;
+            color: #34d399;
+        }
+
+        html.dark-mode .database-status.error {
+            background-color: #3f1e1e;
+            border-color: #ef4444;
+            color: #f87171;
+        }
+
+        html.dark-mode .database-status.info {
+            background-color: #1e2a4f;
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+
+        html.dark-mode .file-input-label {
+            background-color: #222;
+            color: #fff;
+            border-color: #333;
+        }
+
+        html.dark-mode .file-input-label:hover {
+            background-color: #333;
+        }
+
+        html.dark-mode .import-warning {
+            background-color: #2a1f0f;
+            border-color: #f59e0b;
+        }
+
+        html.dark-mode .import-warning h4,
+        html.dark-mode .import-warning p {
+            color: #fbbf24;
+        }
+
+        html.dark-mode .logo h1 {
+            color: #fff;
+        }
+
+        html.dark-mode .logo p {
+            color: #ccc;
+        }
+
+        html.dark-mode .tab-button {
+            background-color: #222;
+            color: #fff;
+            border-color: #333;
+        }
+
+        html.dark-mode .tab-button.active {
+            background-color: #000;
+            color: #fff;
+            border-color: #555;
+        }
+
+        html.dark-mode .tab-button:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        html.dark-mode .form-group label {
+            color: #fff;
+        }
+
+        html.dark-mode .form-group textarea {
+            background-color: #000;
+            color: #fff;
+            border-color: #333;
+        }
+
+        html.dark-mode .submit-button {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .submit-button:hover {
+            background-color: #ccc;
+        }
+
+        html.dark-mode .back-button a {
+            color: #ccc;
+        }
+
+        html.dark-mode .back-button a:hover {
+            color: #fff;
+        }
+
+        html.dark-mode .logout-button {
+            color: #ccc;
+        }
+
+        html.dark-mode .logout-button:hover {
+            color: #fff;
+        }
+
+        /* Fix all text elements to be white in dark mode */
+        html.dark-mode h1,
+        html.dark-mode h2,
+        html.dark-mode h3,
+        html.dark-mode h4,
+        html.dark-mode h5,
+        html.dark-mode h6,
+        html.dark-mode p,
+        html.dark-mode span,
+        html.dark-mode div,
+        html.dark-mode td,
+        html.dark-mode th {
+            color: #fff !important;
+        }
+
+        html.dark-mode .form-help {
+            color: #999 !important;
+        }
+
+        html.dark-mode .tab-content {
+            color: #fff;
+        }
+
+        html.dark-mode .empty-state h3 {
+            color: #fff !important;
+        }
+
+        html.dark-mode .empty-state p {
+            color: #999 !important;
+        }
+
+        html.dark-mode .header-actions {
+            color: #fff;
+        }
+
+        html.dark-mode .email-cell,
+        html.dark-mode .ip-cell,
+        html.dark-mode .date-cell {
+            color: #fff !important;
         }
         
         .container {
@@ -51,6 +233,45 @@
         
         .back-button a:hover, .logout-button:hover {
             color: #1f2937;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-left: 1rem;
+        }
+
+        .dark-mode-toggle svg {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .dark-mode-toggle:hover {
+            border-color: #9ca3af;
+            transform: scale(1.05);
+        }
+
+        html.dark-mode .dark-mode-toggle {
+            border-color: #333;
+            color: #fff;
+        }
+
+        html.dark-mode .dark-mode-toggle:hover {
+            border-color: #666;
         }
         
         .logo {
@@ -561,7 +782,12 @@
                 <div class="back-button">
                     <a href="/">← Back to Blog</a>
                 </div>
-                <button class="logout-button" onclick="logout()">Logout</button>
+                <div style="display: flex; align-items: center;">
+                    <button class="dark-mode-toggle" id="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                    <button class="logout-button" onclick="logout()">Logout</button>
+                </div>
             </div>
 
             <!-- Logo -->
@@ -569,11 +795,7 @@
                 <h1 id="site-title-header">LIMEBYTE</h1>
             </div>
 
-            <!-- Header -->
-            <header class="header">
-                <h1>Admin Dashboard</h1>
-                <p>Create and manage your blog posts</p>
-            </header>
+
 
             <!-- Tab Navigation -->
             <div class="tabs">
@@ -1012,6 +1234,35 @@
             }
         }
 
+        // Dark mode functionality
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('dark-mode-toggle');
+            
+            html.classList.toggle('dark-mode');
+            
+            if (html.classList.contains('dark-mode')) {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        function initDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            const html = document.documentElement;
+            const toggle = document.getElementById('dark-mode-toggle');
+            
+            if (darkMode === 'enabled') {
+                html.classList.add('dark-mode');
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>';
+            } else {
+                toggle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+            }
+        }
+
         // Check authentication on page load
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
@@ -1019,6 +1270,7 @@
                 window.location.href = '/admin';
                 return;
             }
+            initDarkMode();
             loadSiteSettings();
         });
 
