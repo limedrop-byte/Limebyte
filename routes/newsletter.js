@@ -116,4 +116,37 @@ router.get('/subscribers/export', authenticateToken, async (req, res) => {
   }
 });
 
+// Delete multiple subscribers (admin only)
+router.delete('/subscribers', authenticateToken, async (req, res) => {
+  try {
+    const { subscriberIds } = req.body;
+    
+    if (!subscriberIds || !Array.isArray(subscriberIds) || subscriberIds.length === 0) {
+      return res.status(400).json({ error: 'Subscriber IDs array is required' });
+    }
+    
+    // Validate that all IDs are numbers
+    const validIds = subscriberIds.filter(id => Number.isInteger(Number(id)));
+    if (validIds.length !== subscriberIds.length) {
+      return res.status(400).json({ error: 'All subscriber IDs must be valid numbers' });
+    }
+    
+    // Delete subscribers with the provided IDs
+    const placeholders = validIds.map((_, index) => `$${index + 1}`).join(',');
+    const query = `DELETE FROM subscribers WHERE id IN (${placeholders}) RETURNING id`;
+    
+    const result = await pool.query(query, validIds);
+    
+    res.json({ 
+      message: `Successfully deleted ${result.rows.length} subscriber(s)`,
+      deletedCount: result.rows.length,
+      deletedIds: result.rows.map(row => row.id)
+    });
+    
+  } catch (error) {
+    console.error('Error deleting subscribers:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router; 

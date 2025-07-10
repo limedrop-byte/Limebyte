@@ -40,6 +40,10 @@
             background-color: #000;
         }
 
+        html.dark-mode .article-header {
+            border-color: #333;
+        }
+
         html.dark-mode .article-header h1 {
             color: #fff;
         }
@@ -101,15 +105,56 @@
             background-color: #222;
         }
 
+        html.dark-mode .share-option.copy {
+            border-color: #333;
+        }
+
+        /* Dark mode styles for Newsletter */
+        html.dark-mode .newsletter-banner {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .newsletter-banner:hover {
+            background-color: #e5e7eb;
+        }
+
         html.dark-mode .newsletter-modal-content {
             background-color: #111;
             color: #fff;
+        }
+
+        html.dark-mode .newsletter-modal h2 {
+            color: #fff;
+        }
+
+        html.dark-mode .newsletter-modal p {
+            color: #ccc;
         }
 
         html.dark-mode .newsletter-form input[type="email"] {
             background-color: #000;
             color: #fff;
             border-color: #333;
+        }
+
+        html.dark-mode .newsletter-btn-primary {
+            background-color: #fff;
+            color: #000;
+        }
+
+        html.dark-mode .newsletter-btn-primary:hover {
+            background-color: #e5e7eb;
+        }
+
+        html.dark-mode .newsletter-btn-secondary {
+            background-color: #222;
+            color: #ccc;
+        }
+
+        html.dark-mode .newsletter-btn-secondary:hover {
+            background-color: #333;
+            color: #fff;
         }
 
         html.dark-mode .footer {
@@ -877,6 +922,10 @@
                 left: 50%;
                 right: auto;
                 transform: translateX(-50%);
+            }
+            
+            .newsletter-banner:hover {
+                transform: translateX(-50%) translateY(-2px);
             }
         }
         
