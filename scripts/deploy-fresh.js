@@ -47,19 +47,6 @@ async function deployFresh() {
       );
     `);
     
-    // Create unique constraints and indexes
-    await pool.query(`ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);`);
-    await pool.query(`ALTER TABLE posts ADD CONSTRAINT posts_slug_key UNIQUE (slug);`);
-    await pool.query(`ALTER TABLE subscribers ADD CONSTRAINT subscribers_email_key UNIQUE (email);`);
-    await pool.query(`ALTER TABLE site_settings ADD CONSTRAINT site_settings_setting_key_key UNIQUE (setting_key);`);
-    
-    // Create indexes for posts
-    await pool.query(`CREATE INDEX idx_posts_slug ON posts(slug);`);
-    await pool.query(`CREATE INDEX idx_posts_pinned ON posts(pinned);`);
-    
-    // Create indexes for subscribers
-    await pool.query(`CREATE INDEX idx_subscribers_ip_address ON subscribers(ip_address);`);
-    
     // Create links table
     await pool.query(`
       CREATE TABLE links (
@@ -103,7 +90,24 @@ async function deployFresh() {
       );
     `);
     
-    console.log('✅ All tables created with indexes');
+    console.log('✅ All tables created');
+    
+    console.log('🔗 Adding constraints and indexes...');
+    
+    // Create unique constraints
+    await pool.query(`ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);`);
+    await pool.query(`ALTER TABLE posts ADD CONSTRAINT posts_slug_key UNIQUE (slug);`);
+    await pool.query(`ALTER TABLE subscribers ADD CONSTRAINT subscribers_email_key UNIQUE (email);`);
+    await pool.query(`ALTER TABLE site_settings ADD CONSTRAINT site_settings_setting_key_key UNIQUE (setting_key);`);
+    
+    // Create indexes for posts
+    await pool.query(`CREATE INDEX idx_posts_slug ON posts(slug);`);
+    await pool.query(`CREATE INDEX idx_posts_pinned ON posts(pinned);`);
+    
+    // Create indexes for subscribers
+    await pool.query(`CREATE INDEX idx_subscribers_ip_address ON subscribers(ip_address);`);
+    
+    console.log('✅ All constraints and indexes added');
     
     console.log('👤 Creating admin user...');
     
