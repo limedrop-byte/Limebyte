@@ -1,6 +1,6 @@
-# LIMEBYTE Blog
+# Limebyte Blog
 
-A modern, lightweight blog platform with newsletter subscription capabilities and a secure admin dashboard. Built using Node.js and PostgreSQL for robust performance and data management.
+A modern, lightweight blog platform with newsletter subscription capabilities and a secure admin dashboard. Built using Node.js and PostgreSQL for robust performance and data management. Designed to be extremely lightweight, with a strong focus on content.
 
 ## Prerequisites
 

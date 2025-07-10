@@ -25,10 +25,10 @@ async function deployFresh() {
     await pool.query(`
       CREATE TABLE users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
+        username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        display_name VARCHAR(100),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        display_name VARCHAR(255)
       );
     `);
     
@@ -38,20 +38,27 @@ async function deployFresh() {
         id SERIAL PRIMARY KEY,
         subject VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
-        slug VARCHAR(255) UNIQUE NOT NULL,
         author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        view_count INTEGER DEFAULT 0 NOT NULL,
-        pinned BOOLEAN DEFAULT FALSE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        slug VARCHAR(255),
+        view_count INTEGER DEFAULT 0 NOT NULL,
+        pinned BOOLEAN DEFAULT FALSE NOT NULL
       );
     `);
     
+    // Create unique constraints and indexes
+    await pool.query(`ALTER TABLE users ADD CONSTRAINT users_username_key UNIQUE (username);`);
+    await pool.query(`ALTER TABLE posts ADD CONSTRAINT posts_slug_key UNIQUE (slug);`);
+    await pool.query(`ALTER TABLE subscribers ADD CONSTRAINT subscribers_email_key UNIQUE (email);`);
+    await pool.query(`ALTER TABLE site_settings ADD CONSTRAINT site_settings_setting_key_key UNIQUE (setting_key);`);
+    
     // Create indexes for posts
     await pool.query(`CREATE INDEX idx_posts_slug ON posts(slug);`);
-    await pool.query(`CREATE INDEX idx_posts_view_count ON posts(view_count);`);
-    await pool.query(`CREATE INDEX idx_posts_created_at ON posts(created_at);`);
     await pool.query(`CREATE INDEX idx_posts_pinned ON posts(pinned);`);
+    
+    // Create indexes for subscribers
+    await pool.query(`CREATE INDEX idx_subscribers_ip_address ON subscribers(ip_address);`);
     
     // Create links table
     await pool.query(`
@@ -67,8 +74,9 @@ async function deployFresh() {
     await pool.query(`
       CREATE TABLE subscribers (
         id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        email VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ip_address INET
       );
     `);
     
@@ -84,15 +92,14 @@ async function deployFresh() {
       );
     `);
     
-    // Create site_settings table (the one you wanted kept)
+    // Create site_settings table (key-value pairs)
     await pool.query(`
       CREATE TABLE site_settings (
         id SERIAL PRIMARY KEY,
-        site_title VARCHAR(255) NOT NULL DEFAULT 'LIMEBYTE',
+        setting_key VARCHAR(100) NOT NULL,
+        setting_value TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        footer_text TEXT DEFAULT 'Building the future, one commit at a time.',
-        site_description TEXT DEFAULT 'No expectations, just building weird stuff for fun. Made with AI. Repo''s public. Check out the shorts, the games, and join the newsletter n'' shit.'
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     
@@ -119,14 +126,12 @@ async function deployFresh() {
       )
     `);
     
-    // Insert into site_settings table
+    // Insert into site_settings table (key-value pairs)
     await pool.query(`
-      INSERT INTO site_settings (site_title, footer_text, site_description) 
-      VALUES (
-        'LIMEBYTE',
-        'Building the future, one commit at a time.',
-        'No expectations, just building weird stuff for fun. Made with AI. Repo''s public. Check out the shorts, the games, and join the newsletter n'' shit.'
-      )
+      INSERT INTO site_settings (setting_key, setting_value) VALUES
+      ('site_title', 'LIMEBYTE'),
+      ('footer_text', 'Building the future, one commit at a time.'),
+      ('site_description', 'No expectations, just building weird stuff for fun. Made with AI. Repo''s public. Check out the shorts, the games, and join the newsletter n'' shit.')
     `);
     
     console.log('🎯 Adding some sample data...');
@@ -150,6 +155,8 @@ async function deployFresh() {
     console.log('   - Settings configured');
     console.log('   - Sample post added');
     console.log('   - View counting enabled');
+    console.log('   - Post pinning ready');
+    console.log('   - Newsletter IP tracking enabled');
     console.log('   - Sorting ready');
     
     console.log('\n🔐 Login Credentials:');
